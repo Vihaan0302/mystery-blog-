@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mystery Blog Admin</title>
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #111, #000, #222);
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .card {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid #444;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin: 0.5rem 0 1rem;
+      border: none;
+      border-radius: 5px;
+    }
+    .btn {
+      padding: 0.5rem 1rem;
+      background-color: crimson;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: darkred;
+    }
+    .search {
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mystery Blog Admin</h1>
+  <div class="container">
+    <div class="search">
+      <input type="text" id="search" placeholder="Search posts..." />
+    </div>
+
+    <div class="card">
+      <h2>New Post</h2>
+      <input type="text" id="title" placeholder="Post title" />
+      <textarea id="content" placeholder="Post content"></textarea>
+      <button class="btn" onclick="addPost()">Add Post</button>
+    </div>
+
+    <div id="posts"></div>
+  </div>
+
+  <script>
+    const posts = JSON.parse(localStorage.getItem('posts')) || [
+      { id: 1, title: "Welcome to the Mystery Blog", content: "This is your first post. Use the admin panel to edit or delete posts." }
+    ];
+
+    function savePosts() {
+      localStorage.setItem('posts', JSON.stringify(posts));
+    }
+
+    function renderPosts(filter = "") {
+      const postsDiv = document.getElementById("posts");
+      postsDiv.innerHTML = "";
+
+      const filtered = posts.filter(post =>
+        post.title.toLowerCase().includes(filter.toLowerCase()) ||
+        post.content.toLowerCase().includes(filter.toLowerCase())
+      );
+
+      filtered.forEach(post => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = \`
+          <h3>\${post.title}</h3>
+          <p>\${post.content}</p>
+          <button class="btn" onclick="deletePost(\${post.id})">Delete</button>
+        \`;
+        postsDiv.appendChild(card);
+      });
+    }
+
+    function addPost() {
+      const title = document.getElementById("title").value.trim();
+      const content = document.getElementById("content").value.trim();
+      if (!title || !content) return;
+
+      const id = posts.length ? posts[posts.length - 1].id + 1 : 1;
+      posts.push({ id, title, content });
+      savePosts();
+      document.getElementById("title").value = "";
+      document.getElementById("content").value = "";
+      renderPosts(document.getElementById("search").value);
+    }
+
+    function deletePost(id) {
+      const index = posts.findIndex(post => post.id === id);
+      if (index !== -1) posts.splice(index, 1);
+      savePosts();
+      renderPosts(document.getElementById("search").value);
+    }
+
+    document.getElementById("search").addEventListener("input", (e) => {
+      renderPosts(e.target.value);
+    });
+
+    renderPosts();
+  </script>
+</body>
+</html>
